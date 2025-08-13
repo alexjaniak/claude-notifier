@@ -1,1 +1,57 @@
-/target
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (optional - include if this is a library)
+# Cargo.lock
+
+# IDE and editor files
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.iml
+.DS_Store
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Configuration files with local settings
+.env
+config.toml
+
+# Backup files
+*.orig
+*.bak
+*.backup
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Test coverage
+*.profraw
+*.profdata
+/coverage/
+tarpaulin-report.html
+
+# Documentation build
+/target/doc/
+
+# Temporary files
+*.tmp
+/tmp/
+
+# Log files
+*.log

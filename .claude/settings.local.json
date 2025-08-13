@@ -5,7 +5,9 @@
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "Bash(chmod:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(cargo test:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,23 @@
+# Claude Notifier Configuration
+
+[notifications]
+# Timeout for notifications in milliseconds
+timeout = 5000
+
+# Sound settings for different event types (macOS only)
+[notifications.sounds]
+approval = "Glass"
+tool_use = "Pop"
+completion = "Hero"
+unknown = "Tink"
+
+[testing]
+# Enable sending actual notifications during tests
+send_notifications = false
+
+# Delay between test notifications in milliseconds
+notification_delay = 1000
+
+[debug]
+# Show debug output (payload JSON, etc.)
+enabled = false
