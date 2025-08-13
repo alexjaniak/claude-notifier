@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Determine notification based on event type
     let (title, body, sound) = match payload.event.as_str() {
-        "NotificationReceived" => {
+        "Notification" => {
             // Claude needs approval
             let body = if let Some(metadata) = &payload.metadata {
                 if let Some(tool_name) = &metadata.tool_name {

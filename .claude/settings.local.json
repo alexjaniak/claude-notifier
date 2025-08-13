@@ -4,7 +4,8 @@
       "Bash(cargo build:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": [],
     "ask": []
