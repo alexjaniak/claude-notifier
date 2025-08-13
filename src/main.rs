@@ -239,22 +239,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 mod tests {
     use super::*;
     use serde_json::json;
-    use std::sync::Once;
-    
-    static INIT: Once = Once::new();
-    static mut TEST_CONFIG: Option<Config> = None;
-    
-    fn get_test_config() -> &'static Config {
-        unsafe {
-            INIT.call_once(|| {
-                TEST_CONFIG = Some(load_config());
-            });
-            TEST_CONFIG.as_ref().unwrap()
-        }
-    }
 
-    fn test_with_notification(name: &str, data: NotificationData) {
-        let config = get_test_config();
+    fn test_with_notification(name: &str, data: NotificationData, config: &Config) {
         
         println!("\nTest: {}", name);
         println!("  Title: {}", data.title);
@@ -273,6 +259,7 @@ mod tests {
 
     #[test]
     fn test_notification_event() {
+        let config = load_config();
         let payload = HookPayload {
             event: "Notification".to_string(),
             content: None,
@@ -284,17 +271,17 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Needs Approval");
         assert_eq!(result.body, "Claude needs approval to use: Bash");
         assert_eq!(result.sound, "Glass");
         
-        test_with_notification("test_notification_event", result);
+        test_with_notification("test_notification_event", result, &config);
     }
 
     #[test]
     fn test_notification_with_message() {
+        let config = load_config();
         let payload = HookPayload {
             event: "Notification".to_string(),
             content: None,
@@ -306,17 +293,17 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Needs Approval");
         assert_eq!(result.body, "Custom approval message");
         assert_eq!(result.sound, "Glass");
         
-        test_with_notification("test_notification_with_message", result);
+        test_with_notification("test_notification_with_message", result, &config);
     }
 
     #[test]
     fn test_pre_tool_use_bash() {
+        let config = load_config();
         let payload = HookPayload {
             event: "PreToolUse".to_string(),
             content: None,
@@ -328,17 +315,17 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Tool Use");
         assert_eq!(result.body, "Running: ls -la");
         assert_eq!(result.sound, "Pop");
         
-        test_with_notification("test_pre_tool_use_bash", result);
+        test_with_notification("test_pre_tool_use_bash", result, &config);
     }
 
     #[test]
     fn test_pre_tool_use_other_tool() {
+        let config = load_config();
         let payload = HookPayload {
             event: "PreToolUse".to_string(),
             content: None,
@@ -350,17 +337,17 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Tool Use");
         assert_eq!(result.body, "Using tool: Read");
         assert_eq!(result.sound, "Pop");
         
-        test_with_notification("test_pre_tool_use_other_tool", result);
+        test_with_notification("test_pre_tool_use_other_tool", result, &config);
     }
 
     #[test]
     fn test_pre_tool_use_from_content() {
+        let config = load_config();
         let content = json!({
             "tool_name": "Bash",
             "parameters": {
@@ -374,17 +361,17 @@ mod tests {
             metadata: None,
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Tool Use");
         assert_eq!(result.body, "Running: npm test");
         assert_eq!(result.sound, "Pop");
         
-        test_with_notification("test_pre_tool_use_from_content", result);
+        test_with_notification("test_pre_tool_use_from_content", result, &config);
     }
 
     #[test]
     fn test_stop_event() {
+        let config = load_config();
         let payload = HookPayload {
             event: "Stop".to_string(),
             content: None,
@@ -396,17 +383,17 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Finished");
         assert_eq!(result.body, "All tests passed successfully");
         assert_eq!(result.sound, "Hero");
         
-        test_with_notification("test_stop_event", result);
+        test_with_notification("test_stop_event", result, &config);
     }
 
     #[test]
     fn test_stop_with_message() {
+        let config = load_config();
         let payload = HookPayload {
             event: "Stop".to_string(),
             content: None,
@@ -418,46 +405,45 @@ mod tests {
             }),
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Finished");
         assert_eq!(result.body, "Build completed");
         assert_eq!(result.sound, "Hero");
         
-        test_with_notification("test_stop_with_message", result);
+        test_with_notification("test_stop_with_message", result, &config);
     }
 
     #[test]
     fn test_unknown_event() {
+        let config = load_config();
         let payload = HookPayload {
             event: "UnknownEvent".to_string(),
             content: None,
             metadata: None,
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Event");
         assert_eq!(result.body, "Event: UnknownEvent");
         assert_eq!(result.sound, "Tink");
         
-        test_with_notification("test_unknown_event", result);
+        test_with_notification("test_unknown_event", result, &config);
     }
 
     #[test]
     fn test_empty_metadata() {
+        let config = load_config();
         let payload = HookPayload {
             event: "Notification".to_string(),
             content: None,
             metadata: None,
         };
         
-        let config = get_test_config();
-        let result = process_hook_event(&payload, config);
+        let result = process_hook_event(&payload, &config);
         assert_eq!(result.title, "Claude Needs Approval");
         assert_eq!(result.body, "Claude needs your approval");
         assert_eq!(result.sound, "Glass");
         
-        test_with_notification("test_empty_metadata", result);
+        test_with_notification("test_empty_metadata", result, &config);
     }
 }
