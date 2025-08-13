@@ -7,7 +7,8 @@
       "Bash(chmod:*)",
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(cargo test:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
