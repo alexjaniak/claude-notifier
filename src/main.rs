@@ -85,6 +85,8 @@ mod tests {
                 description: None,
                 message: None,
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -107,6 +109,8 @@ mod tests {
                 description: None,
                 message: Some("Custom approval message".to_string()),
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -129,6 +133,8 @@ mod tests {
                 description: None,
                 message: None,
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -151,6 +157,8 @@ mod tests {
                 description: None,
                 message: None,
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -175,6 +183,8 @@ mod tests {
             event: "PreToolUse".to_string(),
             content: Some(content),
             metadata: None,
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -197,6 +207,8 @@ mod tests {
                 description: Some("All tests passed successfully".to_string()),
                 message: None,
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -219,6 +231,8 @@ mod tests {
                 description: None,
                 message: Some("Build completed".to_string()),
             }),
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -236,6 +250,8 @@ mod tests {
             event: "UnknownEvent".to_string(),
             content: None,
             metadata: None,
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -253,6 +269,8 @@ mod tests {
             event: "Notification".to_string(),
             content: None,
             metadata: None,
+            tool_name: None,
+            tool_input: None,
         };
         
         let result = process_hook_event(&payload, &config);

@@ -3,9 +3,16 @@ use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HookPayload {
+    #[serde(alias = "hook_event_name")]
     pub event: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<Metadata>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_input: Option<Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

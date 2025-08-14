@@ -34,6 +34,21 @@ pub fn process_hook_event(payload: &HookPayload, config: &Config) -> Notificatio
                     },
                     _ => "Using tool".to_string(),
                 }
+            } else if let Some(tool_name) = &payload.tool_name {
+                // Check for tool_name at top level (new format)
+                if tool_name == "Bash" {
+                    if let Some(tool_input) = &payload.tool_input {
+                        if let Some(command) = tool_input.get("command").and_then(|v| v.as_str()) {
+                            format!("Running: {command}")
+                        } else {
+                            format!("Using tool: {tool_name}")
+                        }
+                    } else {
+                        format!("Using tool: {tool_name}")
+                    }
+                } else {
+                    format!("Using tool: {tool_name}")
+                }
             } else if let Some(content) = &payload.content {
                 if let Some(tool_name) = content.get("tool_name").and_then(|v| v.as_str()) {
                     if tool_name == "Bash" {
