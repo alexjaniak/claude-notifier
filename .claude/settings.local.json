@@ -8,7 +8,13 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(cargo test:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo run:*)",
+      "Bash(cargo doc:*)",
+      "Bash(grep:*)",
+      "Bash(terminal-notifier:*)",
+      "Bash(env)"
     ],
     "deny": [],
     "ask": []

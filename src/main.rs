@@ -1,5 +1,5 @@
 use claude_notifier::types::{Config, HookPayload, NotificationData};
-use claude_notifier::process_hook_event;
+use claude_notifier::{process_hook_event, terminal_detector::TerminalInfo, session_store::SessionStore};
 use notify_rust::{Notification, Timeout};
 use std::io::{self, Read};
 use std::fs;
@@ -16,7 +16,19 @@ pub fn load_config() -> Config {
     }
 }
 
-pub fn send_notification(data: &NotificationData, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+pub fn send_notification(data: &NotificationData, config: &Config, session_id: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
+    // On macOS, prefer terminal-notifier if available for click support
+    #[cfg(target_os = "macos")]
+    {
+        if claude_notifier::terminal_notifier::is_available() {
+            if config.debug.enabled {
+                eprintln!("Debug: Using terminal-notifier for notification");
+            }
+            return claude_notifier::terminal_notifier::send_notification(data, config, session_id);
+        }
+    }
+    
+    // Fallback to notify-rust
     let mut notification = Notification::new();
     notification
         .summary(&data.title)
@@ -29,9 +41,24 @@ pub fn send_notification(data: &NotificationData, config: &Config) -> Result<(),
         notification.sound_name(&data.sound);
     }
     
+    // Add action button if enabled and we have a session ID
+    // Note: On macOS with notify-rust, actions are displayed but we can't detect clicks
+    if config.notifications.click_behavior.enabled {
+        if let Some(sid) = session_id.clone() {
+            notification.action("open_terminal", &config.notifications.click_behavior.action_label);
+            
+            // Store session ID in notification subtitle for debugging
+            if config.debug.enabled {
+                notification.subtitle(&format!("Session: {}", &sid[..8.min(sid.len())]));
+            }
+        }
+    }
+    
     notification.show()?;
+    
     Ok(())
 }
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = load_config();
@@ -44,8 +71,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     
     let payload: HookPayload = serde_json::from_str(&buffer)?;
+    
+    // Store session info if we have a session ID
+    if let Some(ref session_id) = payload.session_id {
+        let store = SessionStore::new();
+        let terminal_info = TerminalInfo::detect();
+        
+        if config.debug.enabled {
+            eprintln!("Debug: Session ID: {}", session_id);
+            eprintln!("Debug: Terminal detected: {:?}", terminal_info.terminal_app);
+        }
+        
+        // Store the session with terminal info
+        store.store_session(
+            session_id,
+            terminal_info,
+            payload.cwd.clone(),
+            payload.transcript_path.clone()
+        ).ok();
+    }
+    
     let notification_data = process_hook_event(&payload, &config);
-    send_notification(&notification_data, &config)?;
+    send_notification(&notification_data, &config, payload.session_id)?;
     
     Ok(())
 }
@@ -64,7 +111,9 @@ mod tests {
         println!("  Sound: {}", data.sound);
         
         if config.testing.send_notifications {
-            if let Err(e) = send_notification(&data, config) {
+            // Use a test session ID for testing
+            let test_session_id = Some(format!("test-session-{}", name));
+            if let Err(e) = send_notification(&data, config, test_session_id) {
                 eprintln!("Failed to send notification: {}", e);
             } else {
                 println!("  ✓ Notification sent!");
@@ -87,6 +136,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -111,6 +163,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -135,6 +190,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -159,6 +217,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -185,6 +246,9 @@ mod tests {
             metadata: None,
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -209,6 +273,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -233,6 +300,9 @@ mod tests {
             }),
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -252,6 +322,9 @@ mod tests {
             metadata: None,
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);
@@ -271,6 +344,9 @@ mod tests {
             metadata: None,
             tool_name: None,
             tool_input: None,
+            session_id: Some("test-session".to_string()),
+            transcript_path: None,
+            cwd: None,
         };
         
         let result = process_hook_event(&payload, &config);

@@ -1,4 +1,7 @@
 pub mod types;
+pub mod terminal_detector;
+pub mod session_store;
+pub mod terminal_notifier;
 
 use types::{Config, HookPayload, NotificationData};
 

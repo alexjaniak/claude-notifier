@@ -11,6 +11,13 @@ tool_use = "Pop"
 completion = "Hero"
 unknown = "Tink"
 
+# Click behavior settings
+[notifications.click_behavior]
+# Enable click-to-focus terminal feature
+enabled = true
+# Label shown on the notification action button
+action_label = "Go to Terminal"
+
 [testing]
 # Enable sending actual notifications during tests
 send_notifications = false
