@@ -13,6 +13,12 @@ pub struct HookPayload {
     pub tool_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_input: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transcript_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cwd: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -32,7 +38,7 @@ pub struct NotificationData {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
-    #[serde(default = "default_notification_config")]
+    #[serde(default)]
     pub notifications: NotificationConfig,
     #[serde(default)]
     pub testing: TestConfig,
@@ -56,6 +62,16 @@ pub struct NotificationConfig {
     pub timeout: u32,
     #[serde(default = "default_sound_config")]
     pub sounds: SoundConfig,
+    #[serde(default = "default_click_behavior")]
+    pub click_behavior: ClickBehavior,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ClickBehavior {
+    #[serde(default = "default_enable_click")]
+    pub enabled: bool,
+    #[serde(default = "default_action_label")]
+    pub action_label: String,
 }
 
 impl Default for NotificationConfig {
@@ -63,6 +79,16 @@ impl Default for NotificationConfig {
         Self {
             timeout: default_timeout(),
             sounds: SoundConfig::default(),
+            click_behavior: ClickBehavior::default(),
+        }
+    }
+}
+
+impl Default for ClickBehavior {
+    fn default() -> Self {
+        Self {
+            enabled: default_enable_click(),
+            action_label: default_action_label(),
         }
     }
 }
@@ -105,10 +131,6 @@ pub struct DebugConfig {
 }
 
 // Default value functions
-fn default_notification_config() -> NotificationConfig {
-    NotificationConfig::default()
-}
-
 fn default_timeout() -> u32 { 5000 }
 
 fn default_sound_config() -> SoundConfig {
@@ -120,3 +142,6 @@ fn default_tool_sound() -> String { "Pop".to_string() }
 fn default_completion_sound() -> String { "Hero".to_string() }
 fn default_unknown_sound() -> String { "Tink".to_string() }
 fn default_delay() -> u64 { 1000 }
+fn default_click_behavior() -> ClickBehavior { ClickBehavior::default() }
+fn default_enable_click() -> bool { true }
+fn default_action_label() -> String { "Go to Terminal".to_string() }
