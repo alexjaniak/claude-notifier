@@ -2,6 +2,13 @@
 
 A Rust-based notification system for Claude Code hooks. Sends native OS notifications when Claude performs various actions, with smart terminal detection and click-to-focus functionality.
 
+## Examples
+
+<div align="center">
+  <img src="assets/eg1.png" alt="Notification Example 1" width="400"/>
+  <img src="assets/eg2.png" alt="Notification Example 2" width="400"/>
+</div>
+
 ## Features
 
 - 🔔 **Native OS Notifications** for Claude Code events:
@@ -16,11 +23,9 @@ A Rust-based notification system for Claude Code hooks. Sends native OS notifica
 
 ## Installation
 
-### From Source
-
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/claude-notifier.git
+git clone https://github.com/alexjaniak/claude-notifier.git
 cd claude-notifier
 
 # Build the project
@@ -45,40 +50,6 @@ cp config.toml.example config.toml
 
 3. Configure as a Claude Code hook (see Usage section)
 
-## Testing
-
-### Run all tests (without notifications)
-```bash
-cargo test
-```
-
-### Run all tests with actual notifications
-Enable in `config.toml`:
-```toml
-[testing]
-send_notifications = true
-```
-Then run:
-```bash
-cargo test
-```
-
-### Run a specific test with notification
-```bash
-cargo test test_notification_event
-```
-
-### Available tests
-- `test_notification_event` - Claude needs approval notification
-- `test_notification_with_message` - Custom approval message
-- `test_pre_tool_use_bash` - Bash command execution
-- `test_pre_tool_use_other_tool` - Other tool usage
-- `test_pre_tool_use_from_content` - Tool use from content field
-- `test_stop_event` - Task completion with description
-- `test_stop_with_message` - Task completion with message
-- `test_unknown_event` - Unknown event handling
-- `test_empty_metadata` - Fallback for empty metadata
-
 ## Usage with Claude Code
 
 ### Configure as a Hook
@@ -88,51 +59,48 @@ Add to your Claude Code settings (`.claude/settings.local.json`):
 ```json
 {
   "hooks": {
-    "preToolUse": "echo '$HOOK_PAYLOAD' | /path/to/claude-notifier",
-    "postToolUse": "echo '$HOOK_PAYLOAD' | /path/to/claude-notifier",
-    "notification": "echo '$HOOK_PAYLOAD' | /path/to/claude-notifier",
-    "stop": "echo '$HOOK_PAYLOAD' | /path/to/claude-notifier"
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{PATH_TO_REPO}/target/release/claude-notifier"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{PATH_TO_REPO}/target/release/claude-notifier"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{PATH_TO_REPO}/target/release/claude-notifier"
+          }
+        ]
+      }
+    ]
   }
 }
 ```
 
-Once configured, you'll receive native OS notifications for:
+Replace `{PATH_TO_REPO}` with the absolute path where you cloned the repository.
+
+Once configured, restart claude-code and make sure have notifications enabled for your IDE / terminal. You should start to get notifications for: 
 - 🟡 **Approval Requests**: When Claude needs your permission
 - 🔧 **Tool Usage**: When Claude runs commands or uses tools
 - ✅ **Task Completion**: When Claude finishes tasks
 - 📢 **Other Events**: Any other Claude Code hook events
-
-## Session Management
-
-The notifier automatically detects and stores information about each Claude Code session:
-- Terminal application (VS Code, iTerm2, Terminal, etc.)
-- Working directory
-- Session ID from Claude Code
-- Parent process information
-
-### Click-to-Focus Feature
-
-When notifications appear, you can click the action button to instantly return to the terminal where Claude is running.
-
-#### Configuration
-
-Customize the click behavior in `config.toml`:
-```toml
-[notifications.click_behavior]
-enabled = true  # Enable/disable action buttons
-action_label = "Go to Terminal"  # Customize button text
-```
-
-#### Manual Session Activation
-
-You can also manually activate a terminal for a specific session:
-```bash
-# List all sessions and choose one interactively
-cargo run --bin activate_session
-
-# Activate a specific session directly
-cargo run --bin activate_session <session_id>
-```
 
 ### Supported Terminals/IDEs
 
@@ -147,20 +115,10 @@ The notifier can detect and activate:
 - **Kitty**
 - **Hyper**
 
-## Architecture
-
-The project is organized into modular components:
-
-- **main.rs** - Entry point and event processing
-- **terminal_detector** - Identifies the running terminal/IDE
-- **terminal_notifier** - Handles OS notifications with platform-specific features
-- **session_store** - Manages persistent session data
-- **types** - Shared type definitions and configuration
-
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For suggestions and contributions, reach out to [@waniak_](https://x.com/waniak_) on X.
 
 ## License
 
-[Your license here]
+MIT License - see the [LICENSE](LICENSE) file for details.
