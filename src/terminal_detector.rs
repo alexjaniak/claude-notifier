@@ -222,8 +222,3 @@ fn activate_terminal_app(app_name: &str) -> Result<(), String> {
         Err(format!("Failed to activate {}", app_name))
     }
 }
-
-#[cfg(not(target_os = "macos"))]
-fn activate_terminal_app(_app_name: &str) -> Result<(), String> {
-    Err("Terminal activation not supported on this platform".to_string())
-}
