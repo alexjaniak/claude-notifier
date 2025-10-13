@@ -7,9 +7,21 @@ use include_dir::{include_dir, Dir};
 // Embed the terminal-notifier.app at compile time
 static TERMINAL_NOTIFIER_APP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/resources/terminal-notifier.app");
 
-/// Get the path to terminal-notifier, extracting bundled version if needed
+/// Get the path to terminal-notifier, preferring Homebrew version
 pub fn get_terminal_notifier_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    // Use a consistent cache location
+    // First, try to find terminal-notifier in PATH (Homebrew installation)
+    if let Ok(output) = Command::new("which").arg("terminal-notifier").output() {
+        if output.status.success() {
+            if let Ok(path_str) = String::from_utf8(output.stdout) {
+                let path = PathBuf::from(path_str.trim());
+                if path.exists() {
+                    return Ok(path);
+                }
+            }
+        }
+    }
+
+    // Fallback to bundled version
     let cache_dir = dirs::cache_dir()
         .or_else(|| dirs::home_dir().map(|h| h.join(".cache")))
         .unwrap_or_else(std::env::temp_dir)
@@ -74,6 +86,7 @@ pub fn send_notification(
     cmd.arg("-title").arg(&data.title)
        .arg("-message").arg(&data.body)
        .arg("-sound").arg(&data.sound)
+       .arg("-sender").arg("com.apple.Terminal")
        .arg("-appIcon").arg("https://www.anthropic.com/favicon.ico");
 
     // Add click action if we have a session ID and click behavior is enabled

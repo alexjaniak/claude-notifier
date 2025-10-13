@@ -2,17 +2,51 @@ use claude_notifier::types::{Config, HookPayload};
 use claude_notifier::{process_hook_event, terminal_detector::TerminalInfo, session_store::SessionStore, terminal_notifier};
 use std::io::{self, Read};
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
+use std::env;
 
 pub fn load_config() -> Config {
-    if Path::new("config.toml").exists() {
-        let contents = fs::read_to_string("config.toml")
+    // Try to find config.toml in multiple locations
+    let config_path = find_config_file().unwrap_or_else(|| PathBuf::from("config.toml"));
+
+    if config_path.exists() {
+        let contents = fs::read_to_string(&config_path)
             .expect("Failed to read config.toml");
         toml::from_str(&contents)
             .expect("Failed to parse config.toml")
     } else {
         Config::default()
     }
+}
+
+fn find_config_file() -> Option<PathBuf> {
+    // 1. Try next to the binary
+    if let Ok(exe_path) = env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            let config = exe_dir.join("config.toml");
+            if config.exists() {
+                return Some(config);
+            }
+
+            // 2. Search parent directories (for when binary is in target/release/)
+            let mut current = exe_dir;
+            for _ in 0..5 {  // Search up to 5 levels
+                let config = current.join("config.toml");
+                if config.exists() {
+                    return Some(config);
+                }
+                current = current.parent()?;
+            }
+        }
+    }
+
+    // 3. Try current working directory as fallback
+    let cwd_config = PathBuf::from("config.toml");
+    if cwd_config.exists() {
+        return Some(cwd_config);
+    }
+
+    None
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
